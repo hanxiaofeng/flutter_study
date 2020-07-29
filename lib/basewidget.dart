@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:toast/toast.dart';
+import 'package:flutterhello/provider/themeState.dart';
+import 'package:provider/provider.dart';
 
 void main() => runApp(new BaseWidget());
 
@@ -47,9 +49,9 @@ class HomePage extends State {
                 ),
                 new RaisedButton(
                   onPressed: () {
-                    Toast.show("点我干嘛啊", context);
+                    _changeTheme();
                   },
-                  child: new Text("点我点我"),
+                  child: new Text("改变主题"),
                 )
               ],
             ),
@@ -68,5 +70,16 @@ class HomePage extends State {
             )
           ],
         ));
+  }
+
+  void _changeTheme() {
+    ThemeState themeState = Provider.of<ThemeState>(context, listen: false);
+//    Toast.show('点击了我：'+themeState.stateMode.toString(), context);
+    if(themeState.stateMode == 'dark'){
+      Provider.of<ThemeState>(context, listen: false).updateThemeState('light');
+
+    }else{
+      Provider.of<ThemeState>(context, listen: false).updateThemeState('dark');
+    }
   }
 }

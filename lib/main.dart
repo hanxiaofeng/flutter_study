@@ -2,26 +2,64 @@ import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
 import 'package:flutterhello/basewidget.dart';
 import 'package:flutterhello/demo/NetRequest.dart';
+import 'package:flutterhello/provider/themeState.dart';
 import 'package:flutterhello/signature.dart';
+import 'package:provider/provider.dart';
 import 'package:toast/toast.dart';
 
-void main() => runApp(new MyApp());
+void main() {
+//  runApp(new MyApp());
 
-class MyApp extends StatelessWidget {
+  final themeState = ThemeState("dark");
+  themeState.addListener(() {
+    print("1111");
+  });
+
+  runApp(
+    MultiProvider(
+      providers: [
+        /*ChangeNotifierProvider<ThemeState>.value(
+          value: themeState,
+          child: new HomeApp(),
+        ),*/
+        ChangeNotifierProvider<ThemeState>(
+          create: (context) => ThemeState('dark'),
+//          child: new HomeApp(),
+        )
+      ],
+      child: new HomeApp(),
+    ),
+  );
+}
+
+class HomeApp extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+    return new MyApp();
+  }
+}
+
+class MyApp extends State {
   @override
   Widget build(BuildContext context) {
 //    final wordPair = new WordPair.random();
 
-    return new MaterialApp(
-      title: "Demo",
-      theme: ThemeData.dark(),
-//      theme: new ThemeData(primaryColor: Colors.white,platform: TargetPlatform.iOS),
-      home: new RandomWords(),
-      routes: <String, WidgetBuilder>{
-        '/base': (BuildContext context) => new BaseWidHome(),
-        '/net': (BuildContext context) => new NetRequest(),
-      },
-    );
+    return new Container(
+        child: Consumer<ThemeState>(
+      builder: (context, theme, child) => Container(
+        child: MaterialApp(
+          title: "Demo",
+          theme:
+              theme.stateMode == 'dark' ? ThemeData.dark() : ThemeData.light(),
+          home: new RandomWords(),
+          routes: <String, WidgetBuilder>{
+            '/base': (BuildContext context) => new BaseWidHome(),
+            '/net': (BuildContext context) => new NetRequest(),
+          },
+        ),
+      ),
+    ));
   }
 }
 
@@ -39,18 +77,16 @@ class RandomWordsState extends State<RandomWords> {
 
   final _demoList = new List<String>();
 
-//  final _suggestions = <WordPair>[];
-
   final _biggerFont = const TextStyle(fontSize: 18.0);
 
   final _saved = new Set<String>();
 
   void initData() {
-    _demoList.add("listview使用");
-    _demoList.add("signature");
-    _demoList.add("baseWidget");
-    _demoList.add("netRequest");
-    _demoList.add("测试4");
+    _demoList.add("Listview");
+    _demoList.add("画板");
+    _demoList.add("基础组件");
+    _demoList.add("网络请求");
+    _demoList.add("改变主题");
   }
 
   Widget _buildSuggestions() {
@@ -59,26 +95,17 @@ class RandomWordsState extends State<RandomWords> {
         itemCount: _demoList.length * 2 - 1,
         itemBuilder: (context, i) {
           if (i.isOdd) return new Divider();
-
           final index = i ~/ 2;
-          /*if(index >= _demoList.length){
-            _suggestions.addAll(generateWordPairs().take(10));
-          }*/
           return _buildRow(_demoList[index], index);
         });
   }
 
   Widget _buildRow(String pair, int index) {
-    final alreadySaved = _saved.contains(pair);
 
     return new ListTile(
       title: new Text(
         pair,
         style: _biggerFont,
-      ),
-      trailing: new Icon(
-        alreadySaved ? Icons.favorite : Icons.favorite_border,
-        color: alreadySaved ? Colors.red : null,
       ),
       onTap: () {
 //                if(index == 0){
@@ -94,15 +121,10 @@ class RandomWordsState extends State<RandomWords> {
           _baseWidget();
         } else if (index == 3) {
           _netRequest();
+        } else if (index == 4) {
+          _changeTheme();
         }
 
-        setState(() {
-          if (alreadySaved) {
-            _saved.remove(pair);
-          } else {
-            _saved.add(pair);
-          }
-        });
       },
     );
   }
@@ -110,22 +132,27 @@ class RandomWordsState extends State<RandomWords> {
   @override
   Widget build(BuildContext context) {
 //    final wordPair = new WordPair.random();
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text("start up name"),
-        actions: <Widget>[
-          new IconButton(icon: new Icon(Icons.list), onPressed: _pushSaved)
-        ],
-      ),
-      body: _buildSuggestions(),
-      floatingActionButton: new FloatingActionButton(
-        onPressed: () {
+
+    return Consumer<ThemeState>(
+      builder: (context, themeState, child) {
+        return new Scaffold(
+          appBar: new AppBar(
+            title: new Text("start up name"),
+            actions: <Widget>[
+              new IconButton(icon: new Icon(Icons.list), onPressed: _pushSaved)
+            ],
+          ),
+          body: _buildSuggestions(),
+          floatingActionButton: new FloatingActionButton(
+            onPressed: () {
 //          Toast.show("floating", context);
-          _updateAction();
-        },
-        tooltip: "update text",
-        child: new Icon(Icons.update),
-      ),
+              _updateAction();
+            },
+            tooltip: "update text",
+            child: new Icon(Icons.update),
+          ),
+        );
+      },
     );
   }
 
@@ -219,5 +246,15 @@ class RandomWordsState extends State<RandomWords> {
 
   void _netRequest() {
     Navigator.of(context).pushNamed('/net');
+  }
+
+  void _changeTheme() {
+    ThemeState themeState = Provider.of<ThemeState>(context, listen: false);
+    Toast.show('点击了我：' + themeState.stateMode.toString(), context);
+    if (themeState.stateMode == 'dark') {
+      Provider.of<ThemeState>(context, listen: false).updateThemeState('light');
+    } else {
+      Provider.of<ThemeState>(context, listen: false).updateThemeState('dark');
+    }
   }
 }

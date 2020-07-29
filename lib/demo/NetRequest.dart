@@ -193,23 +193,39 @@ class HomePage extends State<NetPageHome> {
 
   Widget _getItemView(int index) {
     if (widgets[index].type == "image") {
+      var imageUrl = widgets[index].images;
+      if(null == imageUrl){
+        imageUrl = "images/placeholder.jpg";
+      }
+
       return new Stack(
         alignment: Alignment.center,
         children: <Widget>[
           new FadeInImage.assetNetwork(
             placeholder: "images/placeholder.jpg",
-            image: widgets[index].images,
+            image: imageUrl,
             height: 300,
           ),
         ],
       );
     }
+
+    var imageUrl = widgets[index].thumbnail;
+    if(null == imageUrl){
+      imageUrl = "images/placeholder.jpg";
+    }
+
+    var videoUrl = widgets[index].video;
+    if(null == videoUrl){
+      videoUrl = "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4";
+    }
+
     return new Stack(
       alignment: Alignment.center,
       children: <Widget>[
         new FadeInImage.assetNetwork(
-          placeholder: widgets[index].thumbnail,
-          image: widgets[index].thumbnail,
+          placeholder: imageUrl,
+          image: videoUrl,
           height: 300,
         ),
         new Container(
